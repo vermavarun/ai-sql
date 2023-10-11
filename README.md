@@ -1,1 +1,1 @@
-# ai-sql
+Text To SQL with MS SQL Server Connectivity
