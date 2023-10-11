@@ -1,5 +1,3 @@
-# main_app.py
-
 import streamlit as st
 import pandas as pd
 import ms_sql_db
@@ -7,15 +5,21 @@ from prompts.prompts import SYSTEM_MESSAGE
 from azure_openai import get_completion_from_messages
 import json
 import os
+import sqlite_db
 
 def query_database(query, conn):
     """ Run SQL query and return results in a dataframe """
     return pd.read_sql_query(query, conn)
 
-
-
-
 st.title("SQL Query Generator with GPT-4")
+
+db_type = st.selectbox(
+     'Which DB do you want to query?',
+     ('SQLite','MS-SQL'))
+db_type = db_type or 'SQLite'
+st.write('You selected:', db_type)
+
+
 table_name = st.selectbox(
      'Which table do you want to query?',
      ('students','finance'))
@@ -25,8 +29,12 @@ st.write('You selected:', table_name)
 user_message = st.text_input("Enter your message to generate SQL and view results:")
 
 if user_message:
-    conn = ms_sql_db.create_connection()
-    schemas = ms_sql_db.get_schema_representation(table_name)
+    if db_type =="MS-SQL":
+        conn = ms_sql_db.create_connection()
+        schemas = ms_sql_db.get_schema_representation(table_name)
+    if db_type =="SQLite":
+        conn = sqlite_db.create_connection()
+        schemas = sqlite_db.get_schema_representation(table_name)
     # Format the system message with the schema
     formatted_system_message = SYSTEM_MESSAGE.format(schema=schemas[table_name],table_name=table_name)
 
