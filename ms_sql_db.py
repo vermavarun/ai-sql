@@ -49,3 +49,9 @@ def get_schema_representation(table_name):
 
     conn.close()
     return db_schema
+
+def query_database_for_tables(query):
+    conn = create_connection()
+    df = pd.read_sql_query(query, conn)
+    conn.close()
+    return df['TABLE_NAME'].tolist()

@@ -19,10 +19,23 @@ db_type = st.selectbox(
 db_type = db_type or 'SQLite'
 st.write('You selected:', db_type)
 
+tables = []
+
+
+if db_type =="MS-SQL":
+        ms_mql_db_name=os.getenv("MS_SQL_DB_NAME")
+        query_tables = f'SELECT TABLE_NAME FROM ['+ms_mql_db_name+'].INFORMATION_SCHEMA.TABLES;'
+        conn = ms_sql_db.create_connection()
+        tables = ms_sql_db.query_database_for_tables(query_tables)
+if db_type =="SQLite":
+        conn = sqlite_db.create_connection()
+        tables = sqlite_db.query_database_for_tables('SELECT name FROM sqlite_master WHERE type = "table"')
+
+tables_list = tables
 
 table_name = st.selectbox(
      'Which table do you want to query?',
-     ('students','finance'))
+     tables_list)
 table_name = table_name or 'students'
 st.write('You selected:', table_name)
 
@@ -30,10 +43,8 @@ user_message = st.text_input("Enter your message to generate SQL and view result
 
 if user_message:
     if db_type =="MS-SQL":
-        conn = ms_sql_db.create_connection()
         schemas = ms_sql_db.get_schema_representation(table_name)
     if db_type =="SQLite":
-        conn = sqlite_db.create_connection()
         schemas = sqlite_db.get_schema_representation(table_name)
     # Format the system message with the schema
     formatted_system_message = SYSTEM_MESSAGE.format(schema=schemas[table_name],table_name=table_name)
